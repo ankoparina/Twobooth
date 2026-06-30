@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>TwoBooth — Photo booth memories, together or apart</title>
+<meta name="description" content="TwoBooth is an online photo booth for capturing memories together, apart, or solo — no app, no account, just vibes." />
+
+<!-- Premium type pairing: Space Grotesk for display, Manrope for body -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- Decorative film-strip rail used across the app for brand texture -->
+<div class="film-rail film-rail--top" aria-hidden="true"></div>
+
+<!-- ============================== -->
+<!-- SCREEN: LANDING / HERO         -->
+<!-- ============================== -->
+<main id="screen-landing" class="screen screen--active">
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand__mark">TB</span>
+      <span class="brand__name">TwoBooth</span>
+    </div>
+  </header>
+
+  <section class="hero">
+    <p class="hero__eyebrow">a photo booth that doesn't care about distance</p>
+    <h1 class="hero__title">
+      Press the shutter <span class="hero__title-accent">together.</span><br/>
+      Even when you're <span class="hero__title-underline">apart.</span>
+    </h1>
+    <p class="hero__sub">No app to install. No account. Just a room code, a camera, and a strip of photos worth keeping.</p>
+
+    <div class="hero__strip" aria-hidden="true">
+      <div class="strip-card strip-card--1"></div>
+      <div class="strip-card strip-card--2"></div>
+      <div class="strip-card strip-card--3"></div>
+    </div>
+
+    <button class="btn btn--primary btn--lg" id="btn-start">Open the booth</button>
+  </section>
+</main>
+
+<!-- ============================== -->
+<!-- SCREEN: MODE SELECT            -->
+<!-- ============================== -->
+<section id="screen-modes" class="screen">
+  <header class="subbar">
+    <button class="btn-icon" data-go="landing" aria-label="Back">←</button>
+    <h2 class="subbar__title">Choose how you're shooting</h2>
+  </header>
+
+  <div class="mode-grid">
+    <button class="mode-card" data-mode="apart">
+      <span class="mode-card__num">01</span>
+      <h3>Apart</h3>
+      <p>Two people, two devices, one shared strip. Connect with a room code.</p>
+      <span class="mode-card__tag">2 people · live link</span>
+    </button>
+
+    <button class="mode-card" data-mode="together">
+      <span class="mode-card__num">02</span>
+      <h3>Together</h3>
+      <p>Pile in front of one camera. Pick your shot count, strike a pose.</p>
+      <span class="mode-card__tag">1–6 people · one device</span>
+    </button>
+
+    <button class="mode-card" data-mode="solo">
+      <span class="mode-card__num">03</span>
+      <h3>Solo</h3>
+      <p>The full booth experience, just for you.</p>
+      <span class="mode-card__tag">1 person · one device</span>
+    </button>
+  </div>
+</section>
+
+<!-- ============================== -->
+<!-- SCREEN: APART — ROOM SETUP     -->
+<!-- ============================== -->
+<section id="screen-room" class="screen">
+  <header class="subbar">
+    <button class="btn-icon" data-go="modes" aria-label="Back">←</button>
+    <h2 class="subbar__title">Apart mode</h2>
+  </header>
+
+  <div class="room-panel">
+    <div class="room-choice" id="room-choice">
+      <button class="btn btn--primary" id="btn-create-room">Create a room</button>
+      <span class="room-or">or</span>
+      <button class="btn btn--outline" id="btn-join-room">Join with a code</button>
+    </div>
+
+    <!-- Host flow: generate offer, share it, paste partner's answer -->
+    <div class="room-flow" id="flow-host" hidden>
+      <h3>1. Share this room code</h3>
+      <p class="hint">Send this code to your partner however you like — text, DM, carrier pigeon.</p>
+      <div class="code-box">
+        <textarea id="host-offer-code" readonly rows="3"></textarea>
+        <button class="btn btn--small" id="btn-copy-offer">Copy code</button>
+      </div>
+
+      <h3>2. Paste their reply code</h3>
+      <p class="hint">Once they join with your code, they'll get a reply code. Paste it here to connect.</p>
+      <div class="code-box">
+        <textarea id="host-answer-input" placeholder="Paste partner's reply code here" rows="3"></textarea>
+        <button class="btn btn--small" id="btn-connect-host">Connect</button>
+      </div>
+      <p class="status" id="host-status">Waiting for connection…</p>
+    </div>
+
+    <!-- Guest flow: paste offer, generate answer -->
+    <div class="room-flow" id="flow-guest" hidden>
+      <h3>1. Paste the room code</h3>
+      <div class="code-box">
+        <textarea id="guest-offer-input" placeholder="Paste the room code your partner shared" rows="3"></textarea>
+        <button class="btn btn--small" id="btn-make-answer">Generate reply</button>
+      </div>
+
+      <h3>2. Send your reply code back</h3>
+      <p class="hint">Send this back to whoever created the room to finish connecting.</p>
+      <div class="code-box">
+        <textarea id="guest-answer-code" readonly rows="3"></textarea>
+        <button class="btn btn--small" id="btn-copy-answer">Copy reply</button>
+      </div>
+      <p class="status" id="guest-status">Waiting for connection…</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== -->
+<!-- SCREEN: TOGETHER SETUP         -->
+<!-- ============================== -->
+<section id="screen-together-setup" class="screen">
+  <header class="subbar">
+    <button class="btn-icon" data-go="modes" aria-label="Back">←</button>
+    <h2 class="subbar__title">Together mode</h2>
+  </header>
+
+  <div class="setup-panel">
+    <div class="setup-group">
+      <h3>How many shots?</h3>
+      <div class="pill-row" id="shot-count-row">
+        <button class="pill" data-shots="2">2</button>
+        <button class="pill pill--active" data-shots="3">3</button>
+        <button class="pill" data-shots="4">4</button>
+        <button class="pill" data-shots="5">5</button>
+      </div>
+    </div>
+
+    <div class="setup-group">
+      <h3>How many people are in frame?</h3>
+      <p class="hint">Just for the souvenir caption — your camera fits everyone either way.</p>
+      <div class="pill-row" id="people-count-row">
+        <button class="pill" data-people="1">1</button>
+        <button class="pill pill--active" data-people="2">2</button>
+        <button class="pill" data-people="3">3</button>
+        <button class="pill" data-people="4">4</button>
+        <button class="pill" data-people="5">5</button>
+        <button class="pill" data-people="6">6</button>
+      </div>
+    </div>
+
+    <button class="btn btn--primary btn--lg" id="btn-together-start">Enter the booth</button>
+  </div>
+</section>
+
+<!-- ============================== -->
+<!-- SCREEN: CAMERA / BOOTH         -->
+<!-- ============================== -->
+<section id="screen-camera" class="screen">
+  <div class="booth">
+    <header class="booth__topbar">
+      <button class="btn-icon btn-icon--ghost" data-go="modes" aria-label="Exit booth">✕</button>
+      <span class="booth__progress" id="booth-progress">Shot 1 of 3</span>
+      <span class="booth__mode-tag" id="booth-mode-tag">Together</span>
+    </header>
+
+    <div class="booth__stage">
+      <video id="video-preview" class="booth__video" autoplay playsinline muted></video>
+      <!-- Partner's live remote video, shown only in apart mode -->
+      <video id="video-remote" class="booth__video booth__video--remote" autoplay playsinline hidden></video>
+      <canvas id="capture-canvas" hidden></canvas>
+
+      <div class="booth__countdown" id="booth-countdown" hidden>3</div>
+      <div class="booth__flash" id="booth-flash" aria-hidden="true"></div>
+
+      <div class="booth__camera-error" id="camera-error" hidden>
+        <p>We couldn't reach your camera.</p>
+        <p class="hint">Check permissions, or continue with a placeholder so you can still try the booth.</p>
+        <button class="btn btn--outline btn--small" id="btn-use-placeholder">Use placeholder</button>
+      </div>
+    </div>
+
+    <div class="booth__controls">
+      <button class="btn-icon" id="btn-flip-camera" aria-label="Flip camera">⟲</button>
+      <button class="shutter" id="btn-shutter" aria-label="Take photo">
+        <span class="shutter__ring"></span>
+      </button>
+      <button class="btn-icon" id="btn-toggle-grid" aria-label="Toggle grid">▦</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== -->
+<!-- SCREEN: EDITOR                 -->
+<!-- ============================== -->
+<section id="screen-editor" class="screen">
+  <header class="subbar">
+    <button class="btn-icon" id="btn-editor-retake" aria-label="Retake">←</button>
+    <h2 class="subbar__title">Make it yours</h2>
+    <button class="btn btn--primary btn--small" id="btn-editor-done">Export</button>
+  </header>
+
+  <div class="editor">
+    <div class="editor__preview-wrap">
+      <canvas id="editor-canvas" class="editor__canvas"></canvas>
+    </div>
+
+    <div class="editor__panels" id="editor-panels">
+
+      <div class="editor__tabs" id="editor-tabs">
+        <button class="etab etab--active" data-tab="filters">Filters</button>
+        <button class="etab" data-tab="adjust">Adjust</button>
+        <button class="etab" data-tab="layout">Layout</button>
+        <button class="etab" data-tab="extras">Extras</button>
+      </div>
+
+      <!-- FILTERS -->
+      <div class="epanel epanel--active" data-panel="filters">
+        <div class="filter-row" id="filter-row">
+          <button class="filter-chip filter-chip--active" data-filter="none">Original</button>
+          <button class="filter-chip" data-filter="vintage">Vintage</button>
+          <button class="filter-chip" data-filter="bw">B&amp;W</button>
+          <button class="filter-chip" data-filter="warm">Warm</button>
+          <button class="filter-chip" data-filter="cold">Cold</button>
+          <button class="filter-chip" data-filter="film">Film</button>
+          <button class="filter-chip" data-filter="fade">Fade</button>
+          <button class="filter-chip" data-filter="dreamy">Dreamy</button>
+        </div>
+        <label class="toggle-row">
+          <span>Film grain</span>
+          <input type="checkbox" id="toggle-grain" />
+        </label>
+      </div>
+
+      <!-- ADJUST -->
+      <div class="epanel" data-panel="adjust">
+        <div class="slider-row">
+          <label for="slider-brightness">Brightness</label>
+          <input type="range" id="slider-brightness" min="50" max="150" value="100" />
+        </div>
+        <div class="slider-row">
+          <label for="slider-contrast">Contrast</label>
+          <input type="range" id="slider-contrast" min="50" max="150" value="100" />
+        </div>
+        <div class="slider-row">
+          <label for="slider-saturation">Saturation</label>
+          <input type="range" id="slider-saturation" min="0" max="200" value="100" />
+        </div>
+      </div>
+
+      <!-- LAYOUT -->
+      <div class="epanel" data-panel="layout">
+        <h4>Template</h4>
+        <div class="swatch-row" id="template-row">
+          <button class="swatch swatch--active" data-template="strip">Strip</button>
+          <button class="swatch" data-template="grid">Grid</button>
+          <button class="swatch" data-template="polaroid">Polaroid</button>
+        </div>
+        <h4>Border style</h4>
+        <div class="swatch-row" id="border-style-row">
+          <button class="swatch swatch--active" data-border="classic">Classic</button>
+          <button class="swatch" data-border="thick">Thick</button>
+          <button class="swatch" data-border="none">None</button>
+          <button class="swatch" data-border="dashed">Dashed</button>
+        </div>
+        <h4>Border color</h4>
+        <div class="color-row" id="border-color-row">
+          <button class="color-dot color-dot--active" style="--c:#FFFFFF" data-color="#FFFFFF"></button>
+          <button class="color-dot" style="--c:#14110F" data-color="#14110F"></button>
+          <button class="color-dot" style="--c:#FF5A36" data-color="#FF5A36"></button>
+          <button class="color-dot" style="--c:#3D5AFE" data-color="#3D5AFE"></button>
+          <button class="color-dot" style="--c:#FBF7F0" data-color="#FBF7F0"></button>
+          <button class="color-dot" style="--c:#2E7D32" data-color="#2E7D32"></button>
+        </div>
+      </div>
+
+      <!-- EXTRAS -->
+      <div class="epanel" data-panel="extras">
+        <label class="toggle-row">
+          <span>Date stamp</span>
+          <input type="checkbox" id="toggle-date" checked />
+        </label>
+        <div class="text-row">
+          <label for="input-caption">Caption</label>
+          <input type="text" id="input-caption" maxlength="40" placeholder="say something nice…" />
+        </div>
+        <h4>Stickers</h4>
+        <div class="sticker-row" id="sticker-row">
+          <button class="sticker-btn" data-sticker="❤️">❤️</button>
+          <button class="sticker-btn" data-sticker="⭐">⭐</button>
+          <button class="sticker-btn" data-sticker="✨">✨</button>
+          <button class="sticker-btn" data-sticker="😂">😂</button>
+          <button class="sticker-btn" data-sticker="🔥">🔥</button>
+          <button class="sticker-btn" data-sticker="🥹">🥹</button>
+          <button class="sticker-btn" data-sticker="📍">📍</button>
+          <button class="sticker-btn" data-sticker="🎀">🎀</button>
+        </div>
+        <p class="hint">Tap a sticker to drop it on the strip, then drag to place it.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============================== -->
+<!-- SCREEN: EXPORT                 -->
+<!-- ============================== -->
+<section id="screen-export" class="screen">
+  <header class="subbar">
+    <button class="btn-icon" data-go="editor" aria-label="Back to editor">←</button>
+    <h2 class="subbar__title">Your strip is ready</h2>
+  </header>
+
+  <div class="export-panel">
+    <img id="export-image" class="export-panel__image" alt="Your finished photo strip" />
+    <div class="export-panel__actions">
+      <button class="btn btn--primary btn--lg" id="btn-download-png">Download PNG</button>
+      <button class="btn btn--outline" id="btn-download-jpg">Download JPG</button>
+      <button class="btn btn--ghost" id="btn-retake-all">Start over</button>
+    </div>
+  </div>
+</section>
+
+<script src="script.js"></script>
+</body>
+</html>
